@@ -72,6 +72,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               alt="Logo Tu Palabra"
               width={180}
               height={84}
+              referrerPolicy="no-referrer"
               className="w-full h-auto object-contain"
               priority
             />
@@ -137,6 +138,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               alt="Logo"
               width={140}
               height={60}
+              referrerPolicy="no-referrer"
               className="w-full h-auto object-contain"
             />
           </div>

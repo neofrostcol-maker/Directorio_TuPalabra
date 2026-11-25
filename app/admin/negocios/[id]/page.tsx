@@ -26,6 +26,7 @@ import {
   X,
 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
+import { normalizarUrlExterna } from '@/lib/utils';
 
 interface NegocioDetalleAdmin {
   id: string;
@@ -74,10 +75,15 @@ export default function AdminNegocioDetallePage({
   const [cargando, setCargando] = useState(true);
   const [procesando, setProcesando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mensajeExito, setMensajeExito] = useState<string | null>(null);
+  const [mensajeAccionError, setMensajeAccionError] = useState<string | null>(null);
 
-  // Modal Rechazo
+  // Modales de confirmación y previsualización de fotos
+  const [modalAprobarAbierto, setModalAprobarAbierto] = useState(false);
+  const [modalEliminarAbierto, setModalEliminarAbierto] = useState(false);
   const [modalRechazoAbierto, setModalRechazoAbierto] = useState(false);
   const [motivoRechazo, setMotivoRechazo] = useState('');
+  const [fotoPreviewUrl, setFotoPreviewUrl] = useState<string | null>(null);
 
   // Modo Edición
   const [modoEdicion, setModoEdicion] = useState(false);
@@ -123,8 +129,8 @@ export default function AdminNegocioDetallePage({
 
   // Cambiar estado a Aprobado
   const handleAprobar = async () => {
-    if (!confirm('¿Deseas aprobar este negocio y publicarlo en el directorio público?')) return;
     setProcesando(true);
+    setMensajeAccionError(null);
     try {
       const res = await fetch(`/api/admin/negocios/${id}`, {
         method: 'PATCH',
@@ -132,9 +138,11 @@ export default function AdminNegocioDetallePage({
         body: JSON.stringify({ accion: 'cambiar_estado', estado: 'aprobado' }),
       });
       if (!res.ok) throw new Error('Error al aprobar.');
+      setModalAprobarAbierto(false);
+      setMensajeExito('Negocio aprobado y publicado en el directorio.');
       await cargarNegocio();
     } catch (err: any) {
-      alert(err.message);
+      setMensajeAccionError(err.message);
     } finally {
       setProcesando(false);
     }
@@ -143,10 +151,11 @@ export default function AdminNegocioDetallePage({
   // Rechazar
   const handleRechazar = async () => {
     if (!motivoRechazo.trim()) {
-      alert('Debes indicar el motivo del rechazo.');
+      setMensajeAccionError('Debes indicar el motivo del rechazo.');
       return;
     }
     setProcesando(true);
+    setMensajeAccionError(null);
     try {
       const res = await fetch(`/api/admin/negocios/${id}`, {
         method: 'PATCH',
@@ -159,9 +168,10 @@ export default function AdminNegocioDetallePage({
       });
       if (!res.ok) throw new Error('Error al rechazar.');
       setModalRechazoAbierto(false);
+      setMensajeExito('Negocio marcado como rechazado.');
       await cargarNegocio();
     } catch (err: any) {
-      alert(err.message);
+      setMensajeAccionError(err.message);
     } finally {
       setProcesando(false);
     }
@@ -170,6 +180,7 @@ export default function AdminNegocioDetallePage({
   // Guardar Edición
   const handleGuardarEdicion = async () => {
     setProcesando(true);
+    setMensajeAccionError(null);
     try {
       const res = await fetch(`/api/admin/negocios/${id}`, {
         method: 'PATCH',
@@ -190,9 +201,10 @@ export default function AdminNegocioDetallePage({
       });
       if (!res.ok) throw new Error('Error al guardar cambios.');
       setModoEdicion(false);
+      setMensajeExito('Datos del negocio actualizados correctamente.');
       await cargarNegocio();
     } catch (err: any) {
-      alert(err.message);
+      setMensajeAccionError(err.message);
     } finally {
       setProcesando(false);
     }
@@ -200,14 +212,8 @@ export default function AdminNegocioDetallePage({
 
   // Eliminar definitivamente
   const handleEliminar = async () => {
-    if (
-      !confirm(
-        '¿Estás seguro de ELIMINAR permanentemente este negocio y todas sus imágenes de Vercel Blob? Esta acción no se puede deshacer.'
-      )
-    )
-      return;
-
     setProcesando(true);
+    setMensajeAccionError(null);
     try {
       const res = await fetch(`/api/admin/negocios/${id}`, {
         method: 'DELETE',
@@ -215,7 +221,8 @@ export default function AdminNegocioDetallePage({
       if (!res.ok) throw new Error('Error al eliminar.');
       router.push('/admin/negocios');
     } catch (err: any) {
-      alert(err.message);
+      setMensajeAccionError(err.message);
+      setModalEliminarAbierto(false);
       setProcesando(false);
     }
   };
@@ -282,7 +289,7 @@ export default function AdminNegocioDetallePage({
               <button
                 type="button"
                 disabled={procesando}
-                onClick={handleAprobar}
+                onClick={() => setModalAprobarAbierto(true)}
                 className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs"
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
@@ -305,7 +312,7 @@ export default function AdminNegocioDetallePage({
             <button
               type="button"
               disabled={procesando}
-              onClick={handleEliminar}
+              onClick={() => setModalEliminarAbierto(true)}
               className="px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold inline-flex items-center gap-1.5"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -313,6 +320,19 @@ export default function AdminNegocioDetallePage({
             </button>
           </div>
         </div>
+
+        {mensajeExito && (
+          <div className="p-3.5 rounded-xl bg-green-50 border border-green-200 text-green-800 text-xs font-medium flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-green-600" />
+            <span>{mensajeExito}</span>
+          </div>
+        )}
+        {mensajeAccionError && (
+          <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-red-600" />
+            <span>{mensajeAccionError}</span>
+          </div>
+        )}
 
         {/* Tarjeta de Estado & Resumen */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs space-y-6">
@@ -379,23 +399,23 @@ export default function AdminNegocioDetallePage({
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               {negocio.imagenes?.map((img, idx) => (
-                <a
+                <button
                   key={img.id || idx}
-                  href={img.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative aspect-4/3 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 hover:opacity-90 transition-opacity block group"
+                  type="button"
+                  onClick={() => setFotoPreviewUrl(img.url)}
+                  className="relative aspect-4/3 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 hover:opacity-90 transition-opacity block group text-left"
                 >
                   <Image
                     src={img.url}
                     alt={`Foto ${idx + 1}`}
                     fill
+                    referrerPolicy="no-referrer"
                     className="object-cover"
                   />
                   <span className="absolute bottom-1 left-1 bg-black/70 text-white text-[9px] px-1.5 py-0.5 rounded font-mono">
                     Foto {idx + 1}
                   </span>
-                </a>
+                </button>
               ))}
             </div>
           </div>
@@ -563,19 +583,23 @@ export default function AdminNegocioDetallePage({
                   <strong>Promoción Miembros:</strong>{' '}
                   {negocio.promocionMiembros || 'Sin promoción especial'}
                 </p>
-                {negocio.sitioWeb && (
-                  <p>
-                    <strong>Sitio Web:</strong>{' '}
-                    <a
-                      href={negocio.sitioWeb}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 underline"
-                    >
-                      {negocio.sitioWeb}
-                    </a>
-                  </p>
-                )}
+                {(() => {
+                  const webUrl = normalizarUrlExterna(negocio.sitioWeb);
+                  if (!webUrl) return null;
+                  return (
+                    <p>
+                      <strong>Sitio Web:</strong>{' '}
+                      <a
+                        href={webUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-tupalabra-700 underline"
+                      >
+                        {negocio.sitioWeb}
+                      </a>
+                    </p>
+                  );
+                })()}
                 {negocio.instagram && (
                   <p>
                     <strong>Instagram:</strong> {negocio.instagram}
@@ -622,6 +646,86 @@ export default function AdminNegocioDetallePage({
                 {procesando ? 'Enviando...' : 'Confirmar Rechazo'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE CONFIRMACIÓN DE APROBACIÓN */}
+      {modalAprobarAbierto && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <h3 className="font-bold text-base text-gray-900">Aprobar y Publicar Negocio</h3>
+            <p className="text-xs text-gray-600">
+              ¿Deseas aprobar <strong>{negocio.nombreNegocio}</strong> para que quede visible en el directorio público?
+            </p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setModalAprobarAbierto(false)}
+                className="px-4 py-2 rounded-xl border border-gray-300 text-xs font-semibold"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={procesando}
+                onClick={handleAprobar}
+                className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs font-bold disabled:opacity-50"
+              >
+                {procesando ? 'Aprobando...' : 'Confirmar Aprobación'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE CONFIRMACIÓN DE ELIMINACIÓN */}
+      {modalEliminarAbierto && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <h3 className="font-bold text-base text-red-700">Eliminar Negocio Permanentemente</h3>
+            <p className="text-xs text-gray-600">
+              Se eliminará <strong>{negocio.nombreNegocio}</strong> y sus imágenes asociadas. Esta acción no se puede deshacer.
+            </p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setModalEliminarAbierto(false)}
+                className="px-4 py-2 rounded-xl border border-gray-300 text-xs font-semibold"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={procesando}
+                onClick={handleEliminar}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold disabled:opacity-50"
+              >
+                {procesando ? 'Eliminando...' : 'Eliminar Definitivamente'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL PREVIEW FOTO */}
+      {fotoPreviewUrl && (
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
+          <button
+            type="button"
+            onClick={() => setFotoPreviewUrl(null)}
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/20 text-white hover:bg-white/30"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <div className="relative w-full max-w-4xl h-[75vh]">
+            <Image
+              src={fotoPreviewUrl}
+              alt="Vista previa"
+              fill
+              referrerPolicy="no-referrer"
+              className="object-contain"
+            />
           </div>
         </div>
       )}

@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { ensureDatabaseReady } from '@/lib/db/bootstrap';
 import { auditoria } from '@/lib/db/schema';
 import { desc } from 'drizzle-orm';
 import { obtenerSesionAdmin } from '@/lib/auth/jwt';
 
 export async function GET() {
   try {
+    await ensureDatabaseReady();
     const sesion = await obtenerSesionAdmin();
     if (!sesion) {
       return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });

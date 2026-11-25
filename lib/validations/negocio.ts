@@ -19,6 +19,58 @@ export function normalizarTelefonoColombia(tel: string): string {
   return limpio;
 }
 
+/**
+ * Valida URLs de imágenes aceptadas por el sistema:
+ * - URLs remotas HTTP/HTTPS (Vercel Blob, Picsum, etc.)
+ * - Rutas locales seguras de subida (/uploads/...)
+ * - Data URIs de imagen válidas (respaldo Demo serverless sin Blob token)
+ */
+export function esUrlImagenValida(val: string): boolean {
+  const trimmed = val.trim();
+  if (!trimmed) return false;
+
+  if (trimmed.startsWith('/uploads/') && !trimmed.includes('..')) {
+    return true;
+  }
+
+  if (/^data:image\/(png|jpeg|jpg|webp);base64,[A-Za-z0-9+/=]+$/i.test(trimmed)) {
+    return true;
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Valida URLs web opcionales (Sitio web o Catálogo)
+ */
+export function esUrlWebOpcional(val: string): boolean {
+  const trimmed = val.trim();
+  if (!trimmed) return true;
+  const lower = trimmed.toLowerCase();
+  if (
+    lower.startsWith('javascript:') ||
+    lower.startsWith('data:') ||
+    lower.startsWith('vbscript:')
+  ) {
+    return false;
+  }
+  const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  try {
+    const parsed = new URL(withScheme);
+    return (
+      (parsed.protocol === 'https:' || parsed.protocol === 'http:') &&
+      parsed.hostname.includes('.')
+    );
+  } catch {
+    return false;
+  }
+}
+
 export const registroNegocioSchema = z.object({
   // Paso 1: Tipo
   tipo: z.enum(['empresa', 'persona_natural'], {
@@ -48,7 +100,7 @@ export const registroNegocioSchema = z.object({
 
   // Fotos obligatorias: Mínimo 3, máximo 5
   imagenes: z
-    .array(z.string().url('URL de imagen no válida'))
+    .array(z.string().refine(esUrlImagenValida, 'URL de imagen no válida'))
     .min(3, 'Debes incluir un mínimo de 3 fotos del negocio o de tus productos/servicios.')
     .max(5, 'Solo puedes incluir un máximo de 5 fotos del negocio.'),
 
@@ -85,7 +137,7 @@ export const registroNegocioSchema = z.object({
     .or(z.literal('')),
   sitioWeb: z
     .string()
-    .url('Ingresa una URL válida (con http:// o https://)')
+    .refine(esUrlWebOpcional, 'Ingresa una URL válida (ej. https://tunegocio.com)')
     .optional()
     .or(z.literal('')),
   instagram: z
@@ -105,7 +157,7 @@ export const registroNegocioSchema = z.object({
     .or(z.literal('')),
   catalogoUrl: z
     .string()
-    .url('Ingresa un enlace válido de catálogo')
+    .refine(esUrlWebOpcional, 'Ingresa un enlace válido de catálogo')
     .optional()
     .or(z.literal('')),
   horario: z
@@ -133,7 +185,7 @@ export const registroNegocioSchema = z.object({
   esMiembroIglesia: z.boolean().default(false),
   logoUrl: z
     .string()
-    .url('El logo debe ser una URL válida.')
+    .refine(esUrlImagenValida, 'El logo debe ser una URL válida.')
     .optional()
     .or(z.literal('')),
 

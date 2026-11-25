@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { getBaseUrl } from '@/lib/utils';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getBaseUrl()),
   title: 'Directorio Empresarial Tu Palabra | Iglesia Cristiana Tu Palabra',
   description:
     'Directorio comercial y de emprendimientos de la Iglesia Cristiana Tu Palabra en Colombia. Descubre y apoya a empresarios, negocios y profesionales de nuestra comunidad.',

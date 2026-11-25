@@ -192,6 +192,28 @@ async function runTests() {
     resetearIntentosLogin(testIp);
   });
 
+  test('Validación de imágenes Demo: debe aceptar rutas /uploads/ y Data URIs de imagen', () => {
+    const conUploadLocal = registroNegocioSchema.safeParse({
+      ...baseValidPayload,
+      imagenes: [
+        '/uploads/negocios/demo/foto1.webp',
+        '/uploads/negocios/demo/foto2.jpg',
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      ],
+    });
+    assert.strictEqual(conUploadLocal.success, true, 'Debe aceptar /uploads/ y Data URIs');
+
+    const esquemaInseguro = registroNegocioSchema.safeParse({
+      ...baseValidPayload,
+      imagenes: [
+        'javascript:alert(1)',
+        'https://picsum.photos/800/601',
+        'https://picsum.photos/800/602',
+      ],
+    });
+    assert.strictEqual(esquemaInseguro.success, false, 'Debe rechazar javascript: URI');
+  });
+
   console.log(`\n🎉 Pruebas finalizadas: ${passed} de ${total} pasaron exitosamente.`);
   if (passed !== total) {
     process.exit(1);

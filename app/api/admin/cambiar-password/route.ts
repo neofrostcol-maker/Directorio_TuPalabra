@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 import { db } from '@/lib/db';
+import { ensureDatabaseReady } from '@/lib/db/bootstrap';
 import { admins, auditoria } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { obtenerSesionAdmin } from '@/lib/auth/jwt';
@@ -9,6 +10,7 @@ import { cambioPasswordSchema } from '@/lib/validations/admin';
 
 export async function POST(req: NextRequest) {
   try {
+    await ensureDatabaseReady();
     const sesion = await obtenerSesionAdmin();
     if (!sesion) {
       return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });

@@ -122,7 +122,24 @@ Pruebas verificadas:
 
 ---
 
-## ☁️ Despliegue en Producción (Vercel + Turso)
+## ▲ Despliegue en Vercel como Demo (Cero Configuración)
+
+La aplicación está preparada para publicarse **en 1 clic en Vercel como Demo funcional** sin necesidad de configurar bases de datos externas ni tokens previos:
+
+1. Sube este repositorio a GitHub / GitLab / Bitbucket o ejecuta `npx vercel --prod`.
+2. Importa el proyecto en [Vercel](https://vercel.com/new) (Framework Preset: **Next.js**).
+3. Haz clic en **Deploy** (no es obligatorio añadir variables de entorno para la Demo).
+
+### ¿Qué incluye el Modo Demo automático?
+- **Base de datos SQLite efímera en `/tmp/dev.db` + Auto-Seed**: Si `TURSO_DATABASE_URL` no está configurada, el servidor copia/inicializa automáticamente la base en `/tmp/dev.db` con las **23 categorías oficiales**, el **administrador único** y **negocios de muestra** (aprobados y pendientes para probar el panel). *(Nota: en Serverless sin Turso, los registros nuevos duran mientras viva la instancia).*
+- **Subida de imágenes sin Token**: Si `BLOB_READ_WRITE_TOKEN` no está configurado, las imágenes comprimidas se guardan automáticamente como Data URIs válidas para previsualización en la Demo.
+- **URLs automáticas**: `robots.txt`, `sitemap.xml` y los metadatos Open Graph resuelven automáticamente el dominio asignado por Vercel (`VERCEL_PROJECT_PRODUCTION_URL` / `VERCEL_URL`).
+
+---
+
+## ☁️ Despliegue en Producción Persistente (Vercel + Turso + Blob)
+
+Para conservar permanentemente todos los negocios e imágenes en producción:
 
 ### Paso 1: Crear Base de Datos en Turso
 
@@ -134,21 +151,18 @@ Pruebas verificadas:
 3. Obtén la URL de conexión y el token de autenticación:
    ```bash
    turso db show tupalabra-db --url
-   # Ejemplo: libsql://tupalabra-db-tuusuario.turso.io
-
    turso db tokens create tupalabra-db
    ```
 
 ### Paso 2: Activar Vercel Blob
 
 1. En el Dashboard de tu proyecto en [Vercel](https://vercel.com):
-2. Ve a la pestaña **Storage**.
-3. Haz clic en **Create Database** -> Selecciona **Blob** (Serverless Storage).
-4. Dale un nombre (ej. `tupalabra-blob`) y haz clic en crear. Vercel inyectará automáticamente la variable `BLOB_READ_WRITE_TOKEN`.
+2. Ve a la pestaña **Storage** -> **Create Database** -> **Blob**.
+3. Vercel inyectará automáticamente la variable `BLOB_READ_WRITE_TOKEN`.
 
 ### Paso 3: Configurar Variables de Entorno en Vercel
 
-En la sección **Settings** -> **Environment Variables** de tu proyecto en Vercel, agrega:
+En **Settings** -> **Environment Variables** de tu proyecto en Vercel, agrega:
 
 | Variable | Valor | Descripción |
 |---|---|---|
@@ -160,18 +174,9 @@ En la sección **Settings** -> **Environment Variables** de tu proyecto en Verce
 | `ADMIN_PASSWORD` | `TuContraseñaSegura2026+` | Contraseña inicial del administrador |
 | `ADMIN_EMAIL` | `jhocamolu2010@gmail.com` | Correo del administrador |
 | `RESEND_API_KEY` | *(Opcional)* `re_...` | Para envío real de correos de notificación |
-| `APP_URL` | `https://tu-dominio.vercel.app` | URL pública de tu dominio |
+| `APP_URL` | *(Opcional)* `https://tu-dominio.vercel.app` | Dominio personalizado |
 
-### Paso 4: Ejecutar Migraciones y Seed en Turso
-
-Puedes ejecutar las migraciones y el seed apuntando temporalmente tus variables locales a Turso:
-
-```bash
-TURSO_DATABASE_URL="libsql://..." TURSO_AUTH_TOKEN="..." npm run db:migrate
-TURSO_DATABASE_URL="libsql://..." TURSO_AUTH_TOKEN="..." npm run db:seed
-```
-
-¡Listo! Tu aplicación estará desplegada y 100% operativa en Vercel.
+*(El esquema y el seed inicial también se aplican automáticamente si la base en Turso está vacía, o puedes ejecutarlos manualmente con `npm run db:migrate && npm run db:seed`).*
 
 ---
 

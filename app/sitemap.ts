@@ -1,10 +1,14 @@
 import { MetadataRoute } from 'next';
 import { db } from '@/lib/db';
+import { ensureDatabaseReady } from '@/lib/db/bootstrap';
 import { negocios } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { getBaseUrl } from '@/lib/utils';
+
+export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.APP_URL || 'http://localhost:3000';
+  const baseUrl = getBaseUrl();
 
   const paginasEstaticas: MetadataRoute.Sitemap = [
     {
@@ -28,6 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
+    await ensureDatabaseReady();
     const aprobados = await db
       .select({
         id: negocios.id,

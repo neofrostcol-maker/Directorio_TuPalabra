@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 import { db } from '@/lib/db';
+import { ensureDatabaseReady } from '@/lib/db/bootstrap';
 import {
   negocios,
   negocioImagenes,
@@ -11,12 +12,14 @@ import { eq } from 'drizzle-orm';
 import { obtenerSesionAdmin } from '@/lib/auth/jwt';
 import { notificarAprobacionNegocio, notificarRechazoNegocio } from '@/lib/email';
 import { eliminarImagenBlob } from '@/lib/storage/blob';
+import { normalizarUrlExterna } from '@/lib/utils';
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await ensureDatabaseReady();
     const admin = await obtenerSesionAdmin();
     if (!admin) {
       return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
@@ -111,11 +114,11 @@ export async function PATCH(
           documento: body.documento ?? negocioExistente.documento,
           ciudad: body.ciudad ?? negocioExistente.ciudad,
           barrio: body.barrio ?? negocioExistente.barrio,
-          sitioWeb: body.sitioWeb ?? negocioExistente.sitioWeb,
+          sitioWeb: body.sitioWeb !== undefined ? normalizarUrlExterna(body.sitioWeb) : negocioExistente.sitioWeb,
           instagram: body.instagram ?? negocioExistente.instagram,
           facebook: body.facebook ?? negocioExistente.facebook,
           tiktok: body.tiktok ?? negocioExistente.tiktok,
-          catalogoUrl: body.catalogoUrl ?? negocioExistente.catalogoUrl,
+          catalogoUrl: body.catalogoUrl !== undefined ? normalizarUrlExterna(body.catalogoUrl) : negocioExistente.catalogoUrl,
           horario: body.horario ?? negocioExistente.horario,
           anioFundacion: body.anioFundacion ?? negocioExistente.anioFundacion,
           tiposAtencion: body.tiposAtencion ? JSON.stringify(body.tiposAtencion) : negocioExistente.tiposAtencion,
@@ -162,6 +165,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await ensureDatabaseReady();
     const admin = await obtenerSesionAdmin();
     if (!admin) {
       return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });

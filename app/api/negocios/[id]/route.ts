@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { ensureDatabaseReady } from '@/lib/db/bootstrap';
 import { negocios, negocioImagenes, negocioCategorias, categorias } from '@/lib/db/schema';
 import { eq, asc } from 'drizzle-orm';
 import { obtenerSesionAdmin } from '@/lib/auth/jwt';
@@ -9,6 +10,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await ensureDatabaseReady();
     const { id } = await params;
     const adminSesion = await obtenerSesionAdmin();
 

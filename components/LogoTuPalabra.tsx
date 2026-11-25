@@ -57,6 +57,7 @@ export default function LogoTuPalabra({
           alt="Emblema Iglesia Cristiana Tu Palabra"
           width={dimensions.emblemSize * 2}
           height={dimensions.emblemSize}
+          referrerPolicy="no-referrer"
           className="object-contain -translate-x-1/4 scale-150"
           priority
         />
@@ -75,6 +76,7 @@ export default function LogoTuPalabra({
             alt="Iglesia Tu Palabra - Un Encuentro de Gracia"
             width={180}
             height={84}
+            referrerPolicy="no-referrer"
             className="w-full h-auto object-contain"
             priority
           />
@@ -108,6 +110,7 @@ export default function LogoTuPalabra({
             alt="Iglesia Cristiana Tu Palabra"
             width={280}
             height={130}
+            referrerPolicy="no-referrer"
             className="w-full h-auto object-contain"
             priority
           />
@@ -137,6 +140,7 @@ export default function LogoTuPalabra({
           src={src}
           alt="Iglesia Tu Palabra"
           fill
+          referrerPolicy="no-referrer"
           className="object-contain"
           priority
         />

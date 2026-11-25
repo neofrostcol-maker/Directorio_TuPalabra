@@ -498,6 +498,7 @@ export default function DirectoryHomePage() {
                               src={fotoPrincipal}
                               alt={negocio.nombreNegocio}
                               fill
+                              referrerPolicy="no-referrer"
                               className="object-cover group-hover:scale-105 transition-transform duration-300"
                               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             />
@@ -536,6 +537,7 @@ export default function DirectoryHomePage() {
                                   alt="Logo"
                                   width={44}
                                   height={44}
+                                  referrerPolicy="no-referrer"
                                   className="w-full h-full object-cover"
                                 />
                               </div>

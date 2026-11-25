@@ -1,3 +1,5 @@
+import { getBaseUrl } from './utils';
+
 interface EnviarEmailParams {
   to: string;
   subject: string;
@@ -49,9 +51,10 @@ export async function notificarNuevoRegistroAdmin(negocio: {
   telefono: string;
 }) {
   const adminEmail = process.env.ADMIN_EMAIL || 'jhocamolu2010@gmail.com';
+  const baseUrl = getBaseUrl();
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
-      <h2 style="color: #1e40af;">Nuevo Negocio Registrado</h2>
+      <h2 style="color: #0A5767;">Nuevo Negocio Registrado</h2>
       <p>Se ha recibido una nueva solicitud de registro en el <strong>Directorio Empresarial Tu Palabra</strong>:</p>
       <ul>
         <li><strong>Negocio:</strong> ${negocio.nombreNegocio}</li>
@@ -61,7 +64,7 @@ export async function notificarNuevoRegistroAdmin(negocio: {
       </ul>
       <p>Por favor ingresa al panel de administración para revisarlo y aprobarlo.</p>
       <div style="margin-top: 25px;">
-        <a href="${process.env.APP_URL || 'http://localhost:3000'}/admin" style="background-color: #2563eb; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold;">Ir al Panel de Administración</a>
+        <a href="${baseUrl}/admin" style="background-color: #0A5767; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold;">Ir al Panel de Administración</a>
       </div>
     </div>
   `;
@@ -80,7 +83,7 @@ export async function notificarAprobacionNegocio(negocio: {
   correo: string;
   id: string;
 }) {
-  const urlNegocio = `${process.env.APP_URL || 'http://localhost:3000'}/negocio/${negocio.id}`;
+  const urlNegocio = `${getBaseUrl()}/negocio/${negocio.id}`;
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
       <h2 style="color: #16a34a;">¡Tu negocio ha sido aprobado! 🎉</h2>

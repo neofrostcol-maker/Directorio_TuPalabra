@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { ensureDatabaseReady } from '@/lib/db/bootstrap';
 import { negocios, negocioCategorias, categorias } from '@/lib/db/schema';
 import { eq, desc, inArray, and, sql } from 'drizzle-orm';
 import { obtenerSesionAdmin } from '@/lib/auth/jwt';
 
 export async function GET(req: NextRequest) {
   try {
+    await ensureDatabaseReady();
     const admin = await obtenerSesionAdmin();
     if (!admin) {
       return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
@@ -17,6 +19,7 @@ export async function GET(req: NextRequest) {
     const categoriaId = searchParams.get('categoriaId') ? parseInt(searchParams.get('categoriaId')!, 10) : null;
     const fechaDesde = searchParams.get('fechaDesde');
     const fechaHasta = searchParams.get('fechaHasta');
+    const q = (searchParams.get('q') || '').trim().toLowerCase();
 
     const condiciones = [];
     if (estado && ['pendiente', 'aprobado', 'rechazado'].includes(estado)) {
@@ -30,6 +33,10 @@ export async function GET(req: NextRequest) {
     }
     if (fechaHasta) {
       condiciones.push(sql`${negocios.creadoEn} <= ${fechaHasta + 'T23:59:59Z'}`);
+    }
+    if (q) {
+      const busquedaSql = sql`LOWER(${negocios.nombreNegocio} || ' ' || COALESCE(${negocios.correo}, '') || ' ' || COALESCE(${negocios.telefono}, '') || ' ' || COALESCE(${negocios.responsable}, '') || ' ' || COALESCE(${negocios.documento}, '')) LIKE ${`%${q}%`}`;
+      condiciones.push(busquedaSql);
     }
     if (categoriaId) {
       const rels = await db

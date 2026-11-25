@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 import { db } from '@/lib/db';
+import { ensureDatabaseReady } from '@/lib/db/bootstrap';
 import {
   negocios,
   negocioImagenes,
@@ -16,6 +17,7 @@ import { eliminarImagenBlob } from '@/lib/storage/blob';
 
 export async function GET(req: NextRequest) {
   try {
+    await ensureDatabaseReady();
     const admin = await obtenerSesionAdmin();
     if (!admin) {
       return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
@@ -208,6 +210,7 @@ export async function GET(req: NextRequest) {
 // Acciones Masivas (Aprobar, Rechazar, Eliminar)
 export async function POST(req: NextRequest) {
   try {
+    await ensureDatabaseReady();
     const admin = await obtenerSesionAdmin();
     if (!admin) {
       return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });

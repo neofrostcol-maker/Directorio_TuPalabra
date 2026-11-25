@@ -148,11 +148,12 @@ export default function RegistroPage() {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('El logo no debe superar los 5 MB.');
+      setErrorGeneral('El logo no debe superar los 5 MB.');
       return;
     }
 
     try {
+      setErrorGeneral(null);
       setSubiendoLogo(true);
       const comprimido = await comprimirImagen(file, 800, 0.9);
       const formData = new FormData();
@@ -172,7 +173,7 @@ export default function RegistroPage() {
       const data = await res.json();
       setLogoUrl(data.url);
     } catch (err: any) {
-      alert(err.message || 'Error al procesar el logo.');
+      setErrorGeneral(err.message || 'Error al procesar el logo.');
     } finally {
       setSubiendoLogo(false);
     }
@@ -185,15 +186,16 @@ export default function RegistroPage() {
 
     const espacioDisponible = 5 - imagenes.length;
     if (espacioDisponible <= 0) {
-      alert('Ya alcanzaste el límite máximo de 5 fotos.');
+      setErrorGeneral('Ya alcanzaste el límite máximo de 5 fotos.');
       return;
     }
 
+    setErrorGeneral(null);
     const archivosAProcesar = files.slice(0, espacioDisponible);
 
     for (const file of archivosAProcesar) {
       if (file.size > 5 * 1024 * 1024) {
-        alert(`La imagen "${file.name}" excede los 5 MB permitidos.`);
+        setErrorGeneral(`La imagen "${file.name}" excede los 5 MB permitidos.`);
         continue;
       }
 
@@ -272,7 +274,7 @@ export default function RegistroPage() {
       setCategoriasSeleccionadas(categoriasSeleccionadas.filter((c) => c !== id));
     } else {
       if (categoriasSeleccionadas.length >= 5) {
-        alert('Puedes seleccionar como máximo 5 categorías para tu negocio.');
+        setErrorGeneral('Puedes seleccionar como máximo 5 categorías para tu negocio.');
         return;
       }
       setCategoriasSeleccionadas([...categoriasSeleccionadas, id]);
@@ -596,6 +598,7 @@ export default function RegistroPage() {
                         alt="Logo del negocio"
                         width={80}
                         height={80}
+                        referrerPolicy="no-referrer"
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -742,6 +745,7 @@ export default function RegistroPage() {
                             src={img.previewUrl || img.url}
                             alt={`Foto ${idx + 1}`}
                             fill
+                            referrerPolicy="no-referrer"
                             className="object-cover -z-10"
                           />
 

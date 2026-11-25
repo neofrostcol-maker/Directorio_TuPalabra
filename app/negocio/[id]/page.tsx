@@ -27,9 +27,11 @@ import {
   ChevronRight,
   Maximize2,
   X,
+  Video,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { normalizarUrlExterna } from '@/lib/utils';
 
 interface NegocioDetalle {
   id: string;
@@ -211,6 +213,7 @@ export default function NegocioDetallePage({
                         src={negocio.logoUrl}
                         alt="Logo"
                         fill
+                        referrerPolicy="no-referrer"
                         className="object-cover"
                       />
                     </div>
@@ -288,6 +291,7 @@ export default function NegocioDetallePage({
                     src={imagenActualUrl}
                     alt={`${negocio.nombreNegocio} foto ${imagenActiva + 1}`}
                     fill
+                    referrerPolicy="no-referrer"
                     className="object-cover"
                     priority
                   />
@@ -348,6 +352,7 @@ export default function NegocioDetallePage({
                           src={img.url}
                           alt="Miniatura"
                           fill
+                          referrerPolicy="no-referrer"
                           className="object-cover"
                         />
                       </button>
@@ -518,83 +523,99 @@ export default function NegocioDetallePage({
                 </div>
 
                 {/* Redes Sociales y Enlaces Web */}
-                {(negocio.sitioWeb || negocio.instagram || negocio.facebook || negocio.tiktok || negocio.catalogoUrl) && (
-                  <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-2xs space-y-3">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-2">
-                      Sitio Web & Redes Sociales
-                    </h4>
+                {(() => {
+                  const webUrl = normalizarUrlExterna(negocio.sitioWeb);
+                  const catUrl = normalizarUrlExterna(negocio.catalogoUrl);
+                  const igUrl = normalizarUrlExterna(negocio.instagram, 'instagram');
+                  const fbUrl = normalizarUrlExterna(negocio.facebook, 'facebook');
+                  const ttUrl = normalizarUrlExterna(negocio.tiktok, 'tiktok');
+                  if (!webUrl && !catUrl && !igUrl && !fbUrl && !ttUrl) return null;
 
-                    <div className="flex flex-col gap-2 text-xs">
-                      {negocio.sitioWeb && (
-                        <a
-                          href={negocio.sitioWeb}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 text-gray-700"
-                        >
-                          <span className="flex items-center gap-2">
-                            <Globe className="w-4 h-4 text-blue-600" />
-                            <span>Sitio Web Oficial</span>
-                          </span>
-                          <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
-                        </a>
-                      )}
+                  return (
+                    <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-2xs space-y-3">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-2">
+                        Sitio Web & Redes Sociales
+                      </h4>
 
-                      {negocio.catalogoUrl && (
-                        <a
-                          href={negocio.catalogoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-between p-2 rounded-xl bg-blue-50 text-blue-900 font-semibold"
-                        >
-                          <span className="flex items-center gap-2">
-                            <Sparkles className="w-4 h-4 text-blue-700" />
-                            <span>Ver Catálogo / Menú Digital</span>
-                          </span>
-                          <ExternalLink className="w-3.5 h-3.5 text-blue-700" />
-                        </a>
-                      )}
+                      <div className="flex flex-col gap-2 text-xs">
+                        {webUrl && (
+                          <a
+                            href={webUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 text-gray-700"
+                          >
+                            <span className="flex items-center gap-2">
+                              <Globe className="w-4 h-4 text-tupalabra-700" />
+                              <span>Sitio Web Oficial</span>
+                            </span>
+                            <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
+                          </a>
+                        )}
 
-                      {negocio.instagram && (
-                        <a
-                          href={
-                            negocio.instagram.startsWith('http')
-                              ? negocio.instagram
-                              : `https://instagram.com/${negocio.instagram.replace('@', '')}`
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-between p-2 rounded-xl hover:bg-pink-50 text-pink-700"
-                        >
-                          <span className="flex items-center gap-2">
-                            <Instagram className="w-4 h-4" />
-                            <span>Instagram ({negocio.instagram})</span>
-                          </span>
-                          <ExternalLink className="w-3.5 h-3.5 text-pink-400" />
-                        </a>
-                      )}
+                        {catUrl && (
+                          <a
+                            href={catUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-2 rounded-xl bg-tupalabra-50 text-tupalabra-900 font-semibold"
+                          >
+                            <span className="flex items-center gap-2">
+                              <Sparkles className="w-4 h-4 text-tupalabra-700" />
+                              <span>Ver Catálogo / Menú Digital</span>
+                            </span>
+                            <ExternalLink className="w-3.5 h-3.5 text-tupalabra-700" />
+                          </a>
+                        )}
 
-                      {negocio.facebook && (
-                        <a
-                          href={
-                            negocio.facebook.startsWith('http')
-                              ? negocio.facebook
-                              : `https://facebook.com/${negocio.facebook}`
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-between p-2 rounded-xl hover:bg-blue-50 text-blue-800"
-                        >
-                          <span className="flex items-center gap-2">
-                            <Facebook className="w-4 h-4" />
-                            <span>Facebook</span>
-                          </span>
-                          <ExternalLink className="w-3.5 h-3.5 text-blue-400" />
-                        </a>
-                      )}
+                        {igUrl && (
+                          <a
+                            href={igUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-2 rounded-xl hover:bg-pink-50 text-pink-700"
+                          >
+                            <span className="flex items-center gap-2">
+                              <Instagram className="w-4 h-4" />
+                              <span>Instagram ({negocio.instagram})</span>
+                            </span>
+                            <ExternalLink className="w-3.5 h-3.5 text-pink-400" />
+                          </a>
+                        )}
+
+                        {fbUrl && (
+                          <a
+                            href={fbUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-2 rounded-xl hover:bg-tupalabra-50 text-tupalabra-800"
+                          >
+                            <span className="flex items-center gap-2">
+                              <Facebook className="w-4 h-4" />
+                              <span>Facebook</span>
+                            </span>
+                            <ExternalLink className="w-3.5 h-3.5 text-tupalabra-500" />
+                          </a>
+                        )}
+
+                        {ttUrl && (
+                          <a
+                            href={ttUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-2 rounded-xl hover:bg-gray-100 text-gray-900"
+                          >
+                            <span className="flex items-center gap-2">
+                              <Video className="w-4 h-4" />
+                              <span>TikTok ({negocio.tiktok})</span>
+                            </span>
+                            <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
+                          </a>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -617,6 +638,7 @@ export default function NegocioDetallePage({
               src={imagenActualUrl}
               alt="Pantalla completa"
               fill
+              referrerPolicy="no-referrer"
               className="object-contain"
             />
           </div>

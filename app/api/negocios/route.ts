@@ -1,22 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 import { db } from '@/lib/db';
+import { ensureDatabaseReady } from '@/lib/db/bootstrap';
 import {
   negocios,
   negocioImagenes,
   negocioCategorias,
   categorias,
 } from '@/lib/db/schema';
-import { eq, and, sql, desc, asc, like, inArray } from 'drizzle-orm';
+import { eq, and, sql, desc, asc, inArray } from 'drizzle-orm';
 import {
   registroNegocioSchema,
   normalizarTelefonoColombia,
 } from '@/lib/validations/negocio';
 import { verificarLimiteRegistro } from '@/lib/rate-limit';
 import { notificarNuevoRegistroAdmin } from '@/lib/email';
+import { normalizarUrlExterna } from '@/lib/utils';
 
 export async function GET(req: NextRequest) {
   try {
+    await ensureDatabaseReady();
     const { searchParams } = new URL(req.url);
     const q = (searchParams.get('q') || '').trim().toLowerCase();
     const categoriaSlug = searchParams.get('categoria') || '';
@@ -182,6 +185,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    await ensureDatabaseReady();
     // 1. Obtener IP y aplicar rate limiting
     const ip =
       req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
@@ -236,11 +240,11 @@ export async function POST(req: NextRequest) {
       documento: data.documento?.trim() || null, // Privado
       ciudad: data.ciudad?.trim() || 'Bogotá',
       barrio: data.barrio?.trim() || null,
-      sitioWeb: data.sitioWeb?.trim() || null,
+      sitioWeb: normalizarUrlExterna(data.sitioWeb),
       instagram: data.instagram?.trim() || null,
       facebook: data.facebook?.trim() || null,
       tiktok: data.tiktok?.trim() || null,
-      catalogoUrl: data.catalogoUrl?.trim() || null,
+      catalogoUrl: normalizarUrlExterna(data.catalogoUrl),
       horario: data.horario?.trim() || null,
       anioFundacion: data.anioFundacion?.trim() || null,
       tiposAtencion: JSON.stringify(data.tiposAtencion || []),

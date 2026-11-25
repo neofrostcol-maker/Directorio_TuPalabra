@@ -30,6 +30,7 @@ export default function Footer() {
                   alt="Iglesia Cristiana Tu Palabra"
                   width={220}
                   height={100}
+                  referrerPolicy="no-referrer"
                   className="w-full h-auto object-contain"
                 />
               </div>

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   Search,
   Filter,
@@ -37,7 +38,10 @@ interface NegocioAdmin {
   categorias: Array<{ id: number; nombre: string }>;
 }
 
-export default function AdminNegociosPage() {
+function AdminNegociosContent() {
+  const searchParams = useSearchParams();
+  const estadoInicial = searchParams.get('estado') || '';
+
   const [negocios, setNegocios] = useState<NegocioAdmin[]>([]);
   const [total, setTotal] = useState(0);
   const [pagina, setPagina] = useState(1);
@@ -45,7 +49,7 @@ export default function AdminNegociosPage() {
   const [cargando, setCargando] = useState(true);
 
   // Filtros
-  const [estadoFiltro, setEstadoFiltro] = useState<string>('');
+  const [estadoFiltro, setEstadoFiltro] = useState<string>(estadoInicial);
   const [tipoFiltro, setTipoFiltro] = useState<string>('');
   const [categoriaFiltro, setCategoriaFiltro] = useState<string>('');
   const [fechaDesde, setFechaDesde] = useState<string>('');
@@ -62,6 +66,15 @@ export default function AdminNegociosPage() {
   const [motivoRechazoMasivo, setMotivoRechazoMasivo] = useState('');
   const [ejecutandoAccion, setEjecutandoAccion] = useState(false);
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
+  const [mensajeError, setMensajeError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const paramEstado = searchParams.get('estado') || '';
+    if (paramEstado && paramEstado !== estadoFiltro) {
+      setEstadoFiltro(paramEstado);
+      setPagina(1);
+    }
+  }, [searchParams, estadoFiltro]);
 
   const cargarNegocios = useCallback(async () => {
     try {
@@ -138,13 +151,14 @@ export default function AdminNegociosPage() {
         throw new Error(data.error || 'Error al ejecutar acción masiva.');
       }
 
+      setMensajeError(null);
       setMensajeExito(data.message || 'Acción completada con éxito.');
       setTimeout(() => setMensajeExito(null), 4000);
       setModalMasivo({ accion: 'aprobar', abierto: false });
       setMotivoRechazoMasivo('');
       cargarNegocios();
     } catch (err: any) {
-      alert(err.message || 'Error en la operación.');
+      setMensajeError(err.message || 'Error en la operación.');
     } finally {
       setEjecutandoAccion(false);
     }
@@ -181,6 +195,7 @@ export default function AdminNegociosPage() {
                 ...(categoriaFiltro ? { categoriaId: categoriaFiltro } : {}),
                 ...(fechaDesde ? { fechaDesde } : {}),
                 ...(fechaHasta ? { fechaHasta } : {}),
+                ...(busqueda.trim() ? { q: busqueda.trim() } : {}),
               }).toString()}`}
               download
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-semibold shadow-2xs transition-colors"
@@ -191,11 +206,17 @@ export default function AdminNegociosPage() {
           </div>
         </div>
 
-        {/* Notificación de éxito */}
+        {/* Notificación de éxito o error */}
         {mensajeExito && (
           <div className="p-3.5 rounded-xl bg-green-50 border border-green-200 text-green-800 text-xs font-medium flex items-center gap-2 animate-in fade-in">
             <CheckCircle2 className="w-4 h-4 text-green-600" />
             <span>{mensajeExito}</span>
+          </div>
+        )}
+        {mensajeError && (
+          <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium flex items-center gap-2 animate-in fade-in">
+            <AlertCircle className="w-4 h-4 text-red-600" />
+            <span>{mensajeError}</span>
           </div>
         )}
 
@@ -666,5 +687,22 @@ export default function AdminNegociosPage() {
         </div>
       )}
     </AdminLayout>
+  );
+}
+
+export default function AdminNegociosPage() {
+  return (
+    <Suspense
+      fallback={
+        <AdminLayout>
+          <div className="flex-1 flex items-center justify-center p-12 text-gray-500">
+            <Loader2 className="w-6 h-6 animate-spin mr-2" />
+            <span>Cargando gestión de negocios...</span>
+          </div>
+        </AdminLayout>
+      }
+    >
+      <AdminNegociosContent />
+    </Suspense>
   );
 }

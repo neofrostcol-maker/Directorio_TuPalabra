@@ -3,7 +3,9 @@ import { jwtVerify } from 'jose/jwt/verify';
 import { cookies } from 'next/headers';
 
 const COOKIE_NAME = 'admin_session_tupalabra';
-const SECRET_STRING = process.env.JWT_SECRET || 'clave-secreta-super-segura-iglesia-tu-palabra-2026-min-32-caracteres';
+const SECRET_STRING =
+  process.env.JWT_SECRET ||
+  'clave-secreta-super-segura-iglesia-tu-palabra-2026-min-32-caracteres';
 const SECRET = new TextEncoder().encode(SECRET_STRING);
 
 export interface AdminJWTPayload {
@@ -35,10 +37,14 @@ export async function verificarTokenAdmin(token: string): Promise<AdminJWTPayloa
 
 export async function establecerCookieSesion(token: string) {
   const cookieStore = await cookies();
+  const esHttps =
+    process.env.VERCEL === '1' ||
+    (process.env.APP_URL?.startsWith('https://') ?? false);
+
   cookieStore.set(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure: esHttps,
+    sameSite: 'lax',
     maxAge: 8 * 60 * 60, // 8 horas en segundos
     path: '/',
   });

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 import { db } from '@/lib/db';
+import { ensureDatabaseReady } from '@/lib/db/bootstrap';
 import { admins, auditoria } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { loginSchema } from '@/lib/validations/admin';
@@ -14,6 +15,7 @@ import { firmarTokenAdmin, establecerCookieSesion } from '@/lib/auth/jwt';
 
 export async function POST(req: NextRequest) {
   try {
+    await ensureDatabaseReady();
     const ip =
       req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
       req.headers.get('x-real-ip') ||
