@@ -1,0 +1,31 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme {
+  --color-tupalabra-50: #f0f8f9;
+  --color-tupalabra-100: #d8edf0;
+  --color-tupalabra-200: #b5dde3;
+  --color-tupalabra-300: #87c4cf;
+  --color-tupalabra-400: #52a4b3;
+  --color-tupalabra-500: #168b9e;
+  --color-tupalabra-600: #0e6f83;
+  --color-tupalabra-700: #0a5767;
+  --color-tupalabra-800: #094553;
+  --color-tupalabra-900: #06313c;
+  --color-tupalabra-950: #031e25;
+
+  --color-tupalabra-accent: #c69229;
+  --color-tupalabra-accent-light: #fef7e6;
+}
+
+:root {
+  --tupalabra-teal: #0a5767;
+  --tupalabra-dark: #07353f;
+  --tupalabra-deep: #031e25;
+  --tupalabra-surface: #f8fbfb;
+}
+
+body {
+  background-color: #f8fbfb;
+  color: #1a1a1a;
+}

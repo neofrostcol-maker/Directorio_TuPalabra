@@ -1,0 +1,13 @@
+import { NextResponse } from 'next/server';
+import { obtenerSesionAdmin } from '@/lib/auth/jwt';
+
+export async function GET() {
+  const sesion = await obtenerSesionAdmin();
+  if (!sesion) {
+    return NextResponse.json({ autenticado: false }, { status: 401 });
+  }
+  return NextResponse.json({
+    autenticado: true,
+    admin: sesion,
+  });
+}

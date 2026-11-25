@@ -1,0 +1,41 @@
+# =====================================================================
+# OWASP SECURITY POLICY PARA CARPETA DE UPLOADS (cPanel / Apache)
+# Desactiva completamente la ejecución de PHP y scripts ejecutables.
+# =====================================================================
+
+# 1. Desactivar el motor de PHP en este directorio y subdirectorios
+<IfModule mod_php.c>
+  php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+  php_flag engine off
+</IfModule>
+<IfModule mod_php8.c>
+  php_flag engine off
+</IfModule>
+
+# 2. Remover controladores de scripts
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .phps .phar .cgi .pl .py .sh
+RemoveType .php .phtml .php3 .php4 .php5 .php7 .php8 .phps .phar .cgi .pl .py .sh
+
+# 3. Denegar acceso absoluto a cualquier archivo con extensión ejecutable
+<FilesMatch "(?i)\.(php|phtml|php3|php4|php5|php7|php8|phps|phar|pl|py|cgi|asp|aspx|sh|bash|exe|bin|htaccess|env)$">
+  Order Allow,Deny
+  Deny from all
+</FilesMatch>
+
+# 4. Desactivar listado de archivos (Directory Browsing)
+Options -Indexes -ExecCGI
+
+# 5. Forzar tipos MIME solo para imágenes estáticas
+<IfModule mod_mime.c>
+  AddType image/jpeg .jpg .jpeg
+  AddType image/png .png
+  AddType image/webp .webp
+  AddType image/svg+xml .svg
+</IfModule>
+
+# 6. Cabecera nosniff
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+</IfModule>

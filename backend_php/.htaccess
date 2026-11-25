@@ -1,0 +1,59 @@
+# =====================================================================
+# DIRECTORIO EMPRESARIAL TU PALABRA - CONFIGURACIÓN APACHE / CPANEL
+# Normas de Seguridad OWASP TOP 10 y Optimización de Rendimiento
+# =====================================================================
+
+# 1. Desactivar navegación de directorios (OWASP A05)
+Options -Indexes -MultiViews
+
+# 2. Bloquear acceso a archivos sensibles y de configuración
+<FilesMatch "(?i)\.(sql|env|json|lock|log|md|sample|bak|config\.local\.php)$">
+  Order Allow,Deny
+  Deny from all
+</FilesMatch>
+
+# 3. Forzar codificación UTF-8
+AddDefaultCharset UTF-8
+AddCharset UTF-8 .json .html .css .js
+
+# 4. Mod Rewrite & Routing
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Forzar HTTPS (Descomentar si el certificado SSL está instalado en cPanel)
+  # RewriteCond %{HTTPS} !=on
+  # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # Soporte para rutas limpias en la API (ej. /api/negocios -> /api/negocios.php)
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME}\.php -f
+  RewriteRule ^(.*)$ $1.php [L]
+</IfModule>
+
+# 5. Cabeceras de Seguridad HTTP Globales (OWASP A05)
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set X-XSS-Protection "1; mode=block"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>
+
+# 6. Compresión GZIP / Deflate para optimizar velocidad de carga
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE application/json
+  AddOutputFilterByType DEFLATE text/plain
+  AddOutputFilterByType DEFLATE text/html
+  AddOutputFilterByType DEFLATE text/xml
+  AddOutputFilterByType DEFLATE text/css
+  AddOutputFilterByType DEFLATE application/javascript
+</IfModule>
+
+# 7. Caché para imágenes públicas en /uploads/
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/webp "access plus 1 month"
+</IfModule>

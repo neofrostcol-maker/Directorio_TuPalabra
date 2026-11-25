@@ -1,0 +1,6 @@
+{
+  "name": "Directorio Empresarial Tu Palabra",
+  "description": "Directorio comercial y de emprendimientos de la Iglesia Cristiana Tu Palabra en Colombia.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
